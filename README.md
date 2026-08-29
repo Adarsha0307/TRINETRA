@@ -1,4 +1,4 @@
-# Nexnetra
+# TRINETRA
 
 Frontend: https://nex-nethra-frontend.vercel.app
 
