@@ -36,3 +36,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials

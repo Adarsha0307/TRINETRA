@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { scanUrl, scanEmail, scanMessage, scanQrContent } from '../services/trustshield/index.js';
+import { scanUrlAsync, scanEmail, scanMessage, scanQrContentAsync } from '../services/trustshield/index.js';
 import { decodeQrBuffer } from '../services/trustshield/qrDecode.js';
 import { makeSignal } from '../services/trustshield/utils.js';
 import { buildResult } from '../services/trustshield/riskEngine.js';
@@ -37,7 +37,7 @@ router.post('/scan/url', async (req, res, next) => {
     const { url } = req.body || {};
     if (typeof url !== 'string' || !url.trim()) return badRequest(res, 'A "url" string is required.');
     if (url.length > MAX_URL_LEN) return badRequest(res, `URL exceeds ${MAX_URL_LEN} characters.`);
-    const { result, preview } = scanUrl(url);
+    const { result, preview } = await scanUrlAsync(url);
     return persistAndSend(res, 'url', preview, result);
   } catch (err) {
     if (err.status === 400) return badRequest(res, err.message);
@@ -87,7 +87,7 @@ router.post('/scan/qr', (req, res, next) => {
       } else {
         return badRequest(res, 'Provide a QR image file (field "image") or decoded "content".');
       }
-      const { result, preview, decoded: dest } = scanQrContent(decoded);
+      const { result, preview, decoded: dest } = await scanQrContentAsync(decoded);
       const saved = await repo.saveScan({ inputType: 'qr', inputPreview: preview, result });
       return res.status(201).json({ id: saved.id, createdAt: saved.createdAt, decodedDestination: dest, ...result });
     } catch (err) { next(err); }

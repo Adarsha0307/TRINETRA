@@ -24,3 +24,18 @@ Backend only. Node/Express + PostgreSQL (extended existing `nexnetra` repo). NO 
 - P0: React scan UI + dashboard consuming the stable contract (see TRUSTSHIELD_PART1.md).
 - P1: ML detection service; live URL reputation with SSRF-safe fetching.
 - P2: re-enable auth + per-user scan history.
+
+## Part 2 — Frontend + ML (DONE, 2026-08)
+- React (Vite) UI, no auth: Landing, Dashboard, URL/Email/Message/QR scanners, reusable
+  RiskResult (score ring + signals + explanation + recommendation), Scan History + detail, About.
+- Python FastAPI ML service (ml-service/): LogisticRegression baseline (baseline-1). Real eval —
+  accuracy 0.941, precision 0.930, recall 0.948, F1 0.939. POST /predict, /health, /metrics.
+- Node->ML integration: mlClient posts URL features to ML service; adds ML_MODEL_RISK signal
+  (fails open if ML down). Browser never calls ML directly.
+- Services under supervisor: ts-backend (8001), ts-ml (5001), frontend (Vite 3000); PostgreSQL.
+- Verified: testing_agent iteration_1 — backend 100% (18 pytest), frontend 100%, no issues.
+  Backend unit tests 15/15 (vitest).
+
+## Part 2 backlog (future)
+- P1: ML text-classifier for message/email content (currently rule-based).
+- P2: re-enable authentication + per-user history; live SSRF-safe URL reputation.

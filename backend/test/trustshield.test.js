@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scanUrl, scanEmail, scanMessage, scanQrContent } from '../src/services/trustshield/index.js';
+import { scanUrl, scanEmail, scanMessage, scanQrContentAsync } from '../src/services/trustshield/index.js';
 
 const codes = (r) => r.signals.map(s => s.code);
 
@@ -82,14 +82,14 @@ describe('Email scanner', () => {
 });
 
 describe('QR scanner', () => {
-  it('analyzes a URL destination', () => {
-    const { result, decoded } = scanQrContent('http://paypa1.com/login');
+  it('analyzes a URL destination', async () => {
+    const { result, decoded } = await scanQrContentAsync('http://paypa1.com/login');
     expect(codes(result)).toContain('BRAND_IMPERSONATION');
     expect(decoded).toBe('http://paypa1.com/login');
   });
 
-  it('treats non-URL payloads as low risk', () => {
-    const { result } = scanQrContent('WIFI:S:MyNetwork;;');
+  it('treats non-URL payloads as low risk', async () => {
+    const { result } = await scanQrContentAsync('WIFI:S:MyNetwork;;');
     expect(result.classification).toBe('SAFE');
   });
 });

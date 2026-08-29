@@ -1,118 +1,97 @@
-# TRINETRA
+# TrustShield
 
-Frontend: https://nex-nethra-frontend.vercel.app
+**AI-powered digital fraud detection & digital trust platform.** Answers one question:
+*"Can I trust this digital interaction?"* — for URLs, emails, SMS/messages and QR codes.
 
-Backend: https://nexnetra-backend.onrender.com
+Every scan returns a **0–100 risk score**, a **classification** (SAFE / SUSPICIOUS / HIGH_RISK),
+a **threat category**, the **detected signals** (evidence), a plain-language **explanation**, and a
+**recommended action**. Detection is explainable and rule-based, augmented by a machine-learning
+phishing-likelihood model. *Authentication is intentionally out of scope for this MVP.*
 
-Nexnetra is an AI-powered cybersecurity platform designed to enhance security analysis and incident response through AI-assisted guidance. This full-stack platform integrates practical security tools with a conversational AI assistant, enabling users to analyze URLs, emails, and passwords for potential threats, report security incidents, verify accounts via one-time codes, recover forgotten passwords, and monitor a live threat intelligence feed — all from a single dashboard. It was built end-to-end, from architecture and backend API design to frontend UI and security hardening (rate limiting, secure headers, input validation), applying real cybersecurity principles to working software.
-
-## Features
-
-- **Multi-layer URL Scanner** — Normalization, domain/IP analysis, SSL cert inspection, redirect chain tracing, brand impersonation detection, heuristic threat scoring, threat intelligence feed lookup, and cached results
-- **Email Analysis** — Header parsing, SPF/DKIM/DMARC validation, and phishing detection
-- **Password Analysis** — Strength scoring, entropy calculation, breach simulation
-- **Security Dashboard** — Risk summary with quick-scan action, score breakdown, and recent activity
-- **AI Assistant** — Floating chat assistant powered by OpenRouter with automatic retry/backoff, available on every page
-- **Incident Reporting** — Submit, track, and manage security incidents
-- **Threat Intelligence Feed** — Curated threat data and lookup integration
-- **Authentication** — JWT auth with bcrypt hashing, email verification + password reset via SendGrid (Gmail SMTP and Resend fallbacks), TOTP MFA, token rotation with theft detection, and rate-limited endpoints
-- **Settings** — Profile management, security (password/MFA), API keys, notifications, quiet hours, auto-remediation, team, IP blocklist, OAuth, shortcuts, health checks, and GDPR-style data export
-- **Account Deletion** — Full deletion with dependent-data cleanup (password-confirmed)
-- **UI** — Animated OTP verification, 3D cube loading screen, cyber-themed animated background (matrix rain + particle network), glassmorphism design
-- **Production Ready** — Helmet security headers, CORS configuration, PostgreSQL, and auto-deploy to Vercel + Render
-
-## Project Structure
+## Architecture
+```
+React (Vite)  →  Node.js + Express  →  Detection Engine  →  ML Service (FastAPI)
+                                    →  Risk Engine        →  PostgreSQL
+```
+The browser talks **only** to the Node/Express API. Node calls the Python ML service internally.
 
 ```
-nexnetra/
-├── frontend/          # React (Vite) SPA
-│   └── src/
-│       ├── api/       # API client with auth interceptors
-│       ├── components/# Reusable UI components (OTP, cyber background, AI chat, buttons)
-│       ├── pages/     # Page-level views
-│       └── routes/    # Route definitions
-├── backend/           # Express REST API
-│   └── src/
-│       ├── controllers/  # Request handlers
-│       ├── routes/       # API endpoints (auth, dashboard, analyzer, incidents, etc.)
-│       ├── middleware/   # Auth (JWT), rate limiting
-│       ├── services/     # Analyzers, URL scanner sub-modules
-│       ├── utils/        # PostgreSQL store, email (Resend), OTP, password analyzer
-│       └── prompts/      # AI prompt templates
-├── database/          # JSON seed data (imported once into PostgreSQL)
-├── scripts/           # SSL cert generation, dev tooling
-├── ssl/               # Self-signed certificates for local HTTPS
-└── render.yaml        # Render deployment template
+frontend/     React UI (scanners, dashboard, history, result)
+backend/      Express API + detection/risk engine + PostgreSQL (Part 1)
+ml-service/   FastAPI + scikit-learn baseline model
 ```
 
-## Tech Stack
+## Setup
 
-- **Frontend**: React 18, Vite, Tailwind CSS 4, React Router, Framer Motion, Lucide icons
-- **Backend**: Node.js, Express, PostgreSQL (pg), JWT, bcrypt, SendGrid (email, with SMTP/Resend fallbacks)
-- **AI**: OpenRouter API (assistant + analyzers)
-- **Hosting**: Vercel (frontend, auto-deploy from `main`), Render (backend + PostgreSQL, auto-deploy from `main`)
-
-## Run Locally
-
-1. Copy `.env.example` to `.env` and update the values:
-   ```
-   DATABASE_URL=<postgresql connection string>
-   JWT_SECRET=<random secret>
-   CLIENT_ORIGIN=http://localhost:5173
-   EMAIL_PROVIDER=sendgrid    # or gmail | resend
-   SENDGRID_API_KEY=<key from https://app.sendgrid.com>
-   EMAIL_FROM=nexnethra@gmail.com
-   OPENROUTER_API_KEY=<key from https://openrouter.ai>
-   ```
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Start the backend in one terminal:
-   ```
-   npm run dev:backend
-   ```
-4. Start the frontend in a second terminal:
-   ```
-   npm run dev
-   ```
-5. Start both simultaneously:
-   ```
-   npm run dev:all
-   ```
-
-## Build for Production
-
-```
-npm run build
-npm start
+### 1. PostgreSQL
+```bash
+service postgresql start
+createdb nexnetra   # or: CREATE DATABASE nexnetra;
 ```
 
-## Deployment
+### 2. Backend (Node/Express)  — port 8001
+```bash
+cp .env.example .env          # set DATABASE_URL, JWT_SECRET, ML_SERVICE_URL, PORT=8001
+npm install
+npm run migrate               # applies migrations (creates scans + scan_signals)
+node backend/src/server.js     # health: GET /api/health
+```
 
-### Frontend (Vercel)
+### 3. ML service (FastAPI)  — port 5001
+```bash
+cd ml-service
+pip install -r requirements.txt
+python train.py               # trains model.pkl + metrics.json
+uvicorn app:app --host 0.0.0.0 --port 5001
+```
 
-- Project connected to GitHub `main` branch — auto-deploys on every push
-- Root directory: `frontend`
-- Set `VITE_API_URL=https://nexnetra-backend.onrender.com`
-- `vercel.json` contains SPA rewrites for client-side routing
+### 4. Frontend (Vite/React)  — port 3000
+```bash
+cd frontend
+cp .env.example .env          # VITE_API_URL empty = same-origin /api
+npm run start                 # or: npm run dev
+```
 
-### Backend (Render)
+## Environment variables
+| Scope | Var | Purpose |
+|---|---|---|
+| backend / root `.env` | `DATABASE_URL` | PostgreSQL connection |
+| | `JWT_SECRET` | required by server bootstrap (auth deferred) |
+| | `PORT` | backend port (8001) |
+| | `ML_SERVICE_URL` | ML service base URL (default http://127.0.0.1:5001) |
+| frontend `.env` | `VITE_API_URL` | API base; empty = same-origin `/api` |
 
-- Deployed via `render.yaml` (or dashboard) — auto-deploys from GitHub `main`
-- Root directory: `backend`
+## API overview (all `/api`, no auth)
+| Method | Path | Body |
+|---|---|---|
+| POST | `/api/scan/url` | `{ "url" }` |
+| POST | `/api/scan/email` | `{ "sender"?, "subject"?, "content" }` |
+| POST | `/api/scan/message` | `{ "content" }` |
+| POST | `/api/scan/qr` | multipart `image` (≤2MB) or `{ "content" }` |
+| GET | `/api/scans` · `/api/scans/:id` · DELETE `/api/scans/:id` | scan history |
+| GET | `/api/dashboard` | real aggregated stats |
 
-| Variable        | Description                                  |
-|-----------------|----------------------------------------------|
-| `DATABASE_URL`  | PostgreSQL connection string (Render DB)     |
-| `JWT_SECRET`    | Strong random secret for JWT signing         |
-| `CLIENT_ORIGIN` | Deployed frontend URL                        |
-| `EMAIL_PROVIDER`| `sendgrid`, `gmail`, or `resend`             |
-| `SENDGRID_API_KEY` | SendGrid API key for OTP/reset emails    |
-| `EMAIL_FROM`    | Verified sender (e.g. `nexnethra@gmail.com`) |
-| `OPENROUTER_API_KEY` | AI provider key                         |
-| `PORT`          | Server port (Render sets this automatically) |
+Result contract: `{ riskScore, classification, threatCategory, signals[], explanation, recommendedAction, ml? }`.
+Thresholds: `0–29 SAFE`, `30–69 SUSPICIOUS`, `70–100 HIGH_RISK`.
 
-> **Email note**: the sender address must be verified with the chosen provider (SendGrid Single Sender / domain, Gmail SMTP, or Resend) for successful delivery.
+## ML service
+`POST /predict` → `{ "probability", "modelVersion": "baseline-1" }` from a Logistic Regression model
+trained on URL structural features. `GET /metrics` returns the evaluation.
 
-> **Local note**: the local `.env` may contain an outdated `DATABASE_URL` — use the current Render PostgreSQL connection string.
+**Evaluation (test set, 1000 samples):** accuracy **0.941**, precision **0.930**, recall **0.948**,
+F1 **0.939**; false positives 34, false negatives 25. The model *supports* the rule engine (adds an
+`ML_MODEL_RISK` signal for high-likelihood URLs) — it never overrides it.
+
+## Demo (hackathon)
+Message Scanner → "Bank / OTP scam" example:
+> *"URGENT: Your account will be suspended today. Verify immediately and share the OTP … http://icici-verify.paypa1.com/login"*
+
+Demonstrates urgency detection, account/OTP manipulation, URL extraction, suspicious URL + brand
+impersonation, ML likelihood, risk score, explanation, and recommended action — the full attack
+chain (Message → Fake Website → Credential Theft → OTP Theft → Financial Fraud).
+
+## Known limitations
+- Rule-based + baseline ML only (no deep learning); ML applies to URL features.
+- URL analysis is fully offline (no live reputation/DNS/SSL fetch) — avoids SSRF.
+- Authentication deferred: scanners/dashboard are public in the MVP.
+- QR decoding supports standard QR images up to 2MB.

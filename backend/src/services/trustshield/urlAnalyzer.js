@@ -4,8 +4,26 @@ import { makeSignal, levenshtein, deleet, safeParseUrl } from './utils.js';
 const CREDENTIAL_RE = /(login|log-in|signin|sign-in|verify|verification|account|secure|update|confirm|password|credential|auth|webscr|recover|unlock)/i;
 const PAYMENT_RE = /(payment|billing|invoice|wallet|bank|transfer|refund|checkout|deposit|kyc)/i;
 
-function isIpHost(host) {
+export function isIpHost(host) {
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(':');
+}
+
+// Numeric feature vector used by the ML service. Kept in sync with ml-service.
+export function extractUrlFeatures(url) {
+  const host = url.hostname.toLowerCase();
+  const hay = (host + url.pathname + url.search).toLowerCase();
+  return {
+    urlLength: url.href.length,
+    hostnameLength: host.length,
+    pathLength: url.pathname.length,
+    subdomainCount: Math.max(0, host.split('.').length - 2),
+    hasIpHost: isIpHost(host) ? 1 : 0,
+    hasPunycode: host.includes('xn--') ? 1 : 0,
+    hasAtSymbol: url.username ? 1 : 0,
+    digitCount: (host.match(/\d/g) || []).length,
+    hasHttps: url.protocol === 'https:' ? 1 : 0,
+    suspiciousKeyword: (CREDENTIAL_RE.test(hay) || PAYMENT_RE.test(hay)) ? 1 : 0
+  };
 }
 
 // Detect brand impersonation / typosquatting on the hostname labels.

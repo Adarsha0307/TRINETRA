@@ -55,7 +55,7 @@ export const SIGNAL_DEFS = {
   ACCOUNT_SUSPENSION: { name: 'Account suspension threat', description: 'The content threatens that an account will be suspended, locked or closed to force a reaction.', reason: 'threatens account suspension or closure', scoreContribution: 10, severity: 'MEDIUM', category: 'PHISHING' },
   THREAT_LANGUAGE: { name: 'Threatening language', description: 'The content uses threats of legal action, fines or penalties to intimidate you.', reason: 'uses threats of legal or financial penalties', scoreContribution: 10, severity: 'MEDIUM', category: 'SUSPICIOUS_CONTENT' },
   CREDENTIAL_REQUEST: { name: 'Credential request', description: 'The content asks you to provide, confirm or re-enter login credentials.', reason: 'requests your login credentials', scoreContribution: 15, severity: 'HIGH', category: 'PHISHING' },
-  OTP_REQUEST: { name: 'OTP request', description: 'The content asks for a one-time passcode (OTP) or verification code, which legitimate organizations never request.', reason: 'asks for a one-time passcode (OTP)', scoreContribution: 15, severity: 'HIGH', category: 'OTP_SCAM' },
+  OTP_REQUEST: { name: 'OTP request', description: 'The content asks for a one-time passcode (OTP) or verification code, which legitimate organizations never request.', reason: 'asks for a one-time passcode (OTP)', scoreContribution: 20, severity: 'HIGH', category: 'OTP_SCAM' },
   FINANCIAL_REQUEST: { name: 'Financial detail request', description: 'The content requests sensitive banking or card details (account number, CVV, KYC, UPI, etc.).', reason: 'requests sensitive banking or card details', scoreContribution: 15, severity: 'HIGH', category: 'BANKING_SCAM' },
   PAYMENT_REQUEST: { name: 'Payment / money request', description: 'The content pressures you to make a payment, transfer money or pay a fee.', reason: 'pressures you to send money or pay a fee', scoreContribution: 10, severity: 'MEDIUM', category: 'PAYMENT_SCAM' },
   FAKE_REWARD: { name: 'Fake reward / prize', description: 'The content claims you have won a prize, lottery or reward, a classic lure to harvest data or money.', reason: 'claims you have won a prize or reward', scoreContribution: 15, severity: 'MEDIUM', category: 'REWARD_SCAM' },
@@ -65,6 +65,9 @@ export const SIGNAL_DEFS = {
   GENERIC_GREETING: { name: 'Generic greeting', description: 'The content uses a generic greeting ("Dear Customer") instead of your name, common in mass phishing.', reason: 'uses a generic, impersonal greeting', scoreContribution: 5, severity: 'LOW', category: 'SUSPICIOUS_CONTENT' },
   BRAND_IMPERSONATION_CONTENT: { name: 'Brand impersonation', description: 'The content impersonates a well-known brand while asking you to take an account action.', reason: 'impersonates a well-known brand', scoreContribution: 15, severity: 'HIGH', category: 'IMPERSONATION' },
   SUSPICIOUS_LINK: { name: 'Suspicious embedded link', description: 'The content contains a link that shows suspicious characteristics when analyzed.', reason: 'contains a suspicious link', scoreContribution: 15, severity: 'HIGH', category: 'PHISHING' },
+
+  // --- ML model ---
+  ML_MODEL_RISK: { name: 'ML phishing likelihood', description: 'A machine-learning model trained on URL features estimated an elevated phishing likelihood.', reason: 'was flagged as likely phishing by the ML model', scoreContribution: 10, severity: 'MEDIUM', category: 'MALICIOUS_URL' },
 
   // --- QR ---
   QR_UNDECODABLE: { name: 'Unreadable QR code', description: 'No QR code could be decoded from the uploaded image.', reason: 'could not be decoded', scoreContribution: 0, severity: 'LOW', category: 'SUSPICIOUS_CONTENT' }

@@ -7,12 +7,12 @@ export function makeSignal(code, overrides = {}) {
   if (!def) throw new Error(`Unknown signal code: ${code}`);
   return {
     code,
-    name: def.name,
+    name: overrides.name || def.name,
     description: overrides.description || def.description,
-    scoreContribution: def.scoreContribution,
-    severity: def.severity,
-    category: def.category,
-    reason: def.reason
+    scoreContribution: overrides.scoreContribution ?? def.scoreContribution,
+    severity: overrides.severity || def.severity,
+    category: overrides.category || def.category,
+    reason: overrides.reason || def.reason
   };
 }
 
