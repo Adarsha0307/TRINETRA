@@ -19,6 +19,7 @@ import threatRoutes from './routes/threatRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import scanRoutes from './routes/scanRoutes.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { migrate } from './utils/migrate.js';
 import { originCheck } from './middleware/originCheck.js';
@@ -99,6 +100,9 @@ app.use('/api', apiLimiter);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Nexnetra backend is running' });
 });
+
+// TrustShield fraud-detection scan APIs (no authentication in MVP).
+app.use('/api', scanRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/assistant', assistantRoutes);
