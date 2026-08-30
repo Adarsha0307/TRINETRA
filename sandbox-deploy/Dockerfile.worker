@@ -1,0 +1,18 @@
+# ClickShield Sandbox Worker — production isolation image.
+# The worker performs the ONLY untrusted-URL browsing and runs as a separate,
+# disposable service. It has NO database access and NO application secrets.
+FROM mcr.microsoft.com/playwright:v1.49.1-jammy
+
+# Non-root user is provided by the base image as "pwuser".
+WORKDIR /worker
+COPY package*.json ./
+RUN npm ci --omit=dev || npm install --omit=dev
+COPY backend/src/services/sandbox ./sandbox
+
+ENV NODE_ENV=production \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+USER pwuser
+# The worker is driven over IPC by the API via child_process.fork in production,
+# or exposed as a minimal internal RPC. It must never receive DB creds/secrets.
+ENTRYPOINT ["node", "sandbox/analyzeWorker.js"]

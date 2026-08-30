@@ -39,3 +39,18 @@ Backend only. Node/Express + PostgreSQL (extended existing `nexnetra` repo). NO 
 ## Part 2 backlog (future)
 - P1: ML text-classifier for message/email content (currently rule-based).
 - P2: re-enable authentication + per-user history; live SSRF-safe URL reputation.
+
+## ClickShield Threat Sandbox (DONE, 2026-08)
+- New module: async URL sandbox with process-isolated Playwright worker (reduced-isolation preview).
+- Full SSRF engine (IPv4/IPv6, private/loopback/link-local/reserved/multicast, cloud metadata,
+  alternate encodings, DNS-rebinding via all-record + final-URL revalidation). Unit-tested.
+- Deterministic evidence-based risk engine; verdicts incl Inconclusive/Analysis failed; confidence
+  = evidence completeness. Output sanitized; URLs redacted; retention cleanup.
+- APIs: POST/GET/GET report/GET screenshot/DELETE /api/sandbox/jobs. Rate-limited. States machine.
+- Frontend /sandbox page (JS) with consent notice, progress, evidence cards, technical details,
+  limitations. Nav + route added. Existing features preserved.
+- Real Playwright verified against local fixtures (credential-form + cross-domain + screenshot).
+- Tests: 43 vitest pass (incl SSRF categories, normalize, sanitize, risk engine, worker, cleanup).
+- Eval (synthetic scoring, NOT live): precision 1.0, recall 0.57, F1 0.73 (3 conservative FNs).
+- Deliverables: sandbox-deploy/{Dockerfile.worker,docker-compose.yml,k8s-worker.yaml}, CLICKSHIELD_SANDBOX.md.
+- Public browsing DISABLED by default (SANDBOX_ALLOW_PUBLIC=false) until hardened worker deployed.

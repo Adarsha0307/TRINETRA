@@ -1,0 +1,37 @@
+# Development/production compose for the ClickShield Threat Sandbox worker.
+# SECURITY: the worker container is locked down — read-only rootfs, all caps
+# dropped, no-new-privileges, non-root, strict resource limits, isolated network.
+services:
+  sandbox-worker:
+    build:
+      context: ..
+      dockerfile: sandbox-deploy/Dockerfile.worker
+    read_only: true
+    user: "pwuser"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # seccomp for Chromium: use the tuned profile below, or Docker's default.
+    # security_opt:
+    #   - seccomp=sandbox-deploy/chrome-seccomp.json
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+      - /worker/.sandbox-artifacts:rw,nosuid,size=128m
+    pids_limit: 256
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: "1.0"
+    # Egress-only network; NO access to the API DB or internal services.
+    networks:
+      - sandbox-egress
+    restart: "no"           # disposable per job in production orchestration
+    environment:
+      NODE_ENV: production
+      # NEVER pass DATABASE_URL / JWT_SECRET / API keys here.
+
+networks:
+  sandbox-egress:
+    driver: bridge
+    # In production, attach an egress firewall / NetworkPolicy that blocks
+    # RFC1918, loopback, link-local and cloud-metadata (169.254.169.254).

@@ -6,6 +6,7 @@ import UrlScanner from './pages/UrlScanner';
 import EmailScanner from './pages/EmailScanner';
 import MessageScanner from './pages/MessageScanner';
 import QrScanner from './pages/QrScanner';
+import ThreatSandbox from './pages/ThreatSandbox';
 import History from './pages/History';
 import ScanDetail from './pages/ScanDetail';
 import About from './pages/About';
@@ -20,6 +21,7 @@ export default function TrustShieldRouter() {
         <Route path="/scan/email" element={<EmailScanner />} />
         <Route path="/scan/message" element={<MessageScanner />} />
         <Route path="/scan/qr" element={<QrScanner />} />
+        <Route path="/sandbox" element={<ThreatSandbox />} />
         <Route path="/history" element={<History />} />
         <Route path="/history/:id" element={<ScanDetail />} />
         <Route path="/about" element={<About />} />

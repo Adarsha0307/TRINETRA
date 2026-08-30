@@ -1,0 +1,68 @@
+# Kubernetes hardening for the ClickShield Sandbox worker.
+# Apply alongside a NetworkPolicy that blocks internal/private/metadata egress.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickshield-sandbox-worker
+  labels: { app: clickshield-sandbox-worker }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: clickshield-sandbox-worker } }
+  template:
+    metadata:
+      labels: { app: clickshield-sandbox-worker }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: worker
+          image: your-registry/clickshield-sandbox-worker:1.0.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            privileged: false
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits:   { cpu: "1000m", memory: "1Gi" }
+          env:
+            - name: NODE_ENV
+              value: "production"
+            # Do NOT mount DB credentials or API secrets into this pod.
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: artifacts, mountPath: /worker/.sandbox-artifacts }
+      volumes:
+        - name: tmp
+          emptyDir: { medium: Memory, sizeLimit: 256Mi }
+        - name: artifacts
+          emptyDir: { sizeLimit: 128Mi }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: clickshield-sandbox-egress
+spec:
+  podSelector: { matchLabels: { app: clickshield-sandbox-worker } }
+  policyTypes: ["Egress"]
+  egress:
+    # Allow DNS.
+    - to: []
+      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+    # Allow public HTTP/HTTPS but EXCLUDE private/link-local/metadata ranges.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16   # link-local + cloud metadata
+              - 127.0.0.0/8
+              - 100.64.0.0/10
+      ports: [{ protocol: TCP, port: 80 }, { protocol: TCP, port: 443 }]

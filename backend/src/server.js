@@ -20,6 +20,8 @@ import scoreRoutes from './routes/scoreRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
+import sandboxRoutes from './routes/sandboxRoutes.js';
+import { startCleanupLoop } from './services/sandbox/jobManager.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { migrate } from './utils/migrate.js';
 import { originCheck } from './middleware/originCheck.js';
@@ -104,6 +106,9 @@ app.get('/api/health', (req, res) => {
 // TrustShield fraud-detection scan APIs (no authentication in MVP).
 app.use('/api', scanRoutes);
 
+// ClickShield Threat Sandbox APIs (async URL analysis; no auth in MVP).
+app.use('/api/sandbox', sandboxRoutes);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/assistant', assistantRoutes);
 app.use('/api/analyze', analyzerRoutes);
@@ -151,6 +156,9 @@ app.use((err, req, res, next) => {
 
 async function start() {
   await migrate();
+
+  // Start Threat Sandbox retention-cleanup loop.
+  startCleanupLoop();
 
   // — HTTP server: serves API on Render (SSL handled by platform) —
   httpServer = http.createServer(app).listen(requestedPort, () => {

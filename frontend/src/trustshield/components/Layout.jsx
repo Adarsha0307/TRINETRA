@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link } from 'react-router-dom';
-import { Shield, LayoutDashboard, Link2, Mail, MessageSquare, QrCode, History } from 'lucide-react';
+import { Shield, LayoutDashboard, Link2, Mail, MessageSquare, QrCode, History, ShieldAlert } from 'lucide-react';
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, testid: 'nav-dashboard' },
@@ -7,6 +7,7 @@ const NAV = [
   { to: '/scan/email', label: 'Email Scanner', icon: Mail, testid: 'nav-email' },
   { to: '/scan/message', label: 'Message Scanner', icon: MessageSquare, testid: 'nav-message' },
   { to: '/scan/qr', label: 'QR Scanner', icon: QrCode, testid: 'nav-qr' },
+  { to: '/sandbox', label: 'Threat Sandbox', icon: ShieldAlert, testid: 'nav-sandbox' },
   { to: '/history', label: 'Scan History', icon: History, testid: 'nav-history' },
 ];
 

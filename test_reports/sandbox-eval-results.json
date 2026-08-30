@@ -1,0 +1,88 @@
+{
+  "disclaimer": "This evaluates the DETERMINISTIC RISK-ENGINE SCORING on synthetic labeled evidence bundles. It is NOT a measure of live, real-world phishing/malware detection accuracy. No live websites were used.",
+  "generatedAt": "2026-08-30T05:12:47.841Z",
+  "cases": 10,
+  "confusionMatrix": {
+    "tp": 4,
+    "tn": 3,
+    "fp": 0,
+    "fn": 3
+  },
+  "precision": 1,
+  "recall": 0.5714,
+  "f1": 0.7273,
+  "accuracy": 0.7,
+  "inconclusiveRate": 0,
+  "rows": [
+    {
+      "name": "clean-benign",
+      "label": "benign",
+      "level": "Low observed risk",
+      "score": 0,
+      "predictedMalicious": false
+    },
+    {
+      "name": "benign-http-only",
+      "label": "benign",
+      "level": "Low observed risk",
+      "score": 8,
+      "predictedMalicious": false
+    },
+    {
+      "name": "benign-login-legit",
+      "label": "benign",
+      "level": "Low observed risk",
+      "score": 18,
+      "predictedMalicious": false
+    },
+    {
+      "name": "lookalike-only",
+      "label": "malicious",
+      "level": "Low observed risk",
+      "score": 20,
+      "predictedMalicious": false
+    },
+    {
+      "name": "phish-credform-crossdomain",
+      "label": "malicious",
+      "level": "High risk",
+      "score": 73,
+      "predictedMalicious": true
+    },
+    {
+      "name": "auto-download",
+      "label": "malicious",
+      "level": "Suspicious",
+      "score": 30,
+      "predictedMalicious": true
+    },
+    {
+      "name": "known-malicious-reputation",
+      "label": "malicious",
+      "level": "Known malicious",
+      "score": 60,
+      "predictedMalicious": true
+    },
+    {
+      "name": "punycode+keywords",
+      "label": "malicious",
+      "level": "Low observed risk",
+      "score": 25,
+      "predictedMalicious": false
+    },
+    {
+      "name": "ip-url",
+      "label": "malicious",
+      "level": "Low observed risk",
+      "score": 25,
+      "predictedMalicious": false
+    },
+    {
+      "name": "excessive-redirects",
+      "label": "malicious",
+      "level": "Suspicious",
+      "score": 38,
+      "predictedMalicious": true
+    }
+  ]
+}
