@@ -68,7 +68,7 @@ export function extractUrls(text) {
 export function safeParseUrl(raw) {
   if (!raw || typeof raw !== 'string') return null;
   let candidate = raw.trim();
-  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(candidate)) candidate = 'http://' + candidate;
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(candidate)) candidate = 'https://' + candidate;
   try {
     return new URL(candidate);
   } catch {

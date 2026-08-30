@@ -1,4 +1,4 @@
-import { BRANDS, SUSPICIOUS_TLDS } from './constants.js';
+import { BRANDS, SUSPICIOUS_TLDS, TRUSTED_DOMAINS } from './constants.js';
 import { makeSignal, levenshtein, deleet, safeParseUrl } from './utils.js';
 
 const CREDENTIAL_RE = /(login|log-in|signin|sign-in|verify|verification|account|secure|update|confirm|password|credential|auth|webscr|recover|unlock)/i;
@@ -33,15 +33,18 @@ function detectBrandImpersonation(hostname) {
   for (const brand of BRANDS) {
     if (hostname === brand.domain || hostname.endsWith('.' + brand.domain)) return null; // legitimate
   }
+  const labels = parts.slice(0, -1); // skip the TLD label
   for (const brand of BRANDS) {
-    for (const label of parts.slice(0, -1)) { // skip the TLD label
-      const norm = deleet(label);
-      if (norm === brand.name && registrable !== brand.domain) {
-        return brand.name;
-      }
-      if (brand.name.length >= 5 && Math.abs(norm.length - brand.name.length) <= 1 &&
-          levenshtein(norm, brand.name) === 1 && norm !== brand.name) {
-        return brand.name;
+    for (const label of labels) {
+      // split composite labels (e.g. "amaz0n-account-verify") into words + whole label
+      const words = label.split(/[-_]+/).filter(Boolean).concat(label);
+      for (const w of words) {
+        const norm = deleet(w);
+        // exact brand token appearing in a non-official domain
+        if (norm === brand.name && registrable !== brand.domain) return brand.name;
+        // one-edit typo of the brand (length-bounded to keep false positives low)
+        if (brand.name.length >= 5 && Math.abs(norm.length - brand.name.length) <= 1 &&
+            levenshtein(norm, brand.name) === 1 && norm !== brand.name) return brand.name;
       }
     }
   }
@@ -50,11 +53,23 @@ function detectBrandImpersonation(hostname) {
 
 // Analyze a single URL string. Returns { signals, parsed, host } — signals is an
 // internal list (see utils.makeSignal). Purely offline: no network requests.
+// True if the host is (a subdomain of) a well-known trusted domain.
+function isTrustedHost(host) {
+  for (const d of TRUSTED_DOMAINS) {
+    if (host === d || host.endsWith('.' + d)) return true;
+  }
+  return false;
+}
+
 export function analyzeUrlString(raw) {
   const url = safeParseUrl(raw);
   if (!url) return { signals: [], parsed: null, host: null, invalid: true };
 
   const host = url.hostname.toLowerCase();
+
+  // Trusted domains short-circuit to a clean, safe result (no false positives).
+  if (isTrustedHost(host)) return { signals: [], parsed: url, host, invalid: false };
+
   const pathQuery = (url.pathname + url.search).toLowerCase();
   const full = url.href;
   const haystack = host + pathQuery;

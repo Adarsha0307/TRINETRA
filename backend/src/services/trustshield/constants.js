@@ -14,6 +14,24 @@ export const THREAT_CATEGORIES = [
   'MALICIOUS_URL', 'SUSPICIOUS_CONTENT', 'NONE'
 ];
 
+// Well-known legitimate domains (and their subdomains) that should never be
+// flagged. Prevents false positives on common trusted sites. Configurable.
+export const TRUSTED_DOMAINS = new Set([
+  'google.com', 'youtube.com', 'gmail.com', 'googleusercontent.com',
+  'microsoft.com', 'live.com', 'office.com', 'outlook.com', 'bing.com', 'windows.com', 'azure.com',
+  'apple.com', 'icloud.com', 'amazon.com', 'aws.amazon.com', 'amazonaws.com',
+  'paypal.com', 'facebook.com', 'instagram.com', 'whatsapp.com', 'messenger.com',
+  'linkedin.com', 'twitter.com', 'x.com', 'netflix.com', 'wikipedia.org', 'wikimedia.org',
+  'reddit.com', 'stackoverflow.com', 'stackexchange.com', 'github.com', 'githubusercontent.com', 'gitlab.com',
+  'yahoo.com', 'dropbox.com', 'adobe.com', 'spotify.com', 'zoom.us', 'slack.com',
+  'cloudflare.com', 'mozilla.org', 'wordpress.com', 'medium.com', 'quora.com',
+  'pinterest.com', 'tumblr.com', 'twitch.tv', 'ebay.com', 'salesforce.com', 'oracle.com',
+  'ibm.com', 'intel.com', 'nvidia.com', 'samsung.com', 'nike.com', 'cnn.com', 'bbc.com',
+  'nytimes.com', 'forbes.com', 'bloomberg.com', 'flipkart.com', 'paytm.com', 'phonepe.com',
+  'sbi.co.in', 'icicibank.com', 'hdfcbank.com', 'axisbank.com', 'chase.com', 'bankofamerica.com',
+  'wellsfargo.com', 'visa.com', 'mastercard.com', 'stripe.com', 'razorpay.com',
+]);
+
 // Configurable brand list for impersonation / typosquatting detection.
 export const BRANDS = [
   { name: 'google', domain: 'google.com' },

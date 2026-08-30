@@ -43,11 +43,11 @@ export default function RiskResult({ result, decodedDestination }) {
       {/* Why flagged */}
       <div style={{ padding: '20px 24px', borderTop: '1px solid var(--ts-border)' }}>
         <h3 style={{ margin: '0 0 14px', fontSize: 15, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--ts-muted)' }}>
-          Why this was flagged
+          {result.classification === 'SAFE' ? 'Observations' : 'Why this was flagged'}
         </h3>
         {signals.length === 0 ? (
-          <p style={{ color: 'var(--ts-muted)', margin: 0 }} data-testid="no-signals">
-            No risk signals were detected in this scan.
+          <p style={{ color: result.classification === 'SAFE' ? '#34d399' : 'var(--ts-muted)', margin: 0, display: 'flex', gap: 8, alignItems: 'center' }} data-testid="no-signals">
+            <ShieldCheck size={16} /> No risk signals were detected — this looks clean.
           </p>
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }} data-testid="signal-list">

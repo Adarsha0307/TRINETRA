@@ -34,8 +34,8 @@ function joinReasons(reasons) {
 
 function buildExplanation(inputType, classification, score, signals) {
   const noun = { url: 'link', email: 'email', message: 'message', qr: 'QR code' }[inputType] || 'interaction';
-  if (!signals.length || score === 0) {
-    return `No risk indicators were detected in this ${noun}. It appears safe based on our automated checks, but always stay alert.`;
+  if (classification === 'SAFE' || !signals.length || score === 0) {
+    return `No significant risk indicators were detected in this ${noun}. It appears safe based on our automated checks — but always stay alert and never share OTPs, passwords, or payment details on unexpected requests.`;
   }
   const top = [...signals]
     .sort((a, b) => b.scoreContribution - a.scoreContribution)
@@ -50,7 +50,8 @@ export function buildResult(inputType, rawSignals) {
   const total = signals.reduce((sum, s) => sum + s.scoreContribution, 0);
   const riskScore = Math.max(0, Math.min(100, total));
   const classification = classify(riskScore);
-  const threatCategory = pickThreatCategory(signals, riskScore);
+  // A SAFE result never carries a threat category — avoids alarming false positives.
+  const threatCategory = classification === 'SAFE' ? 'NONE' : pickThreatCategory(signals, riskScore);
   const explanation = buildExplanation(inputType, classification, riskScore, signals);
   const recommendedAction = RECOMMENDED_ACTIONS[classification];
 
